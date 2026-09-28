@@ -1,0 +1,285 @@
+/*
+标识符
+    解释:编程代码中所有的名字
+    组成:字母,数字,下划线,不建议中文
+    规则:不能是关键字,不能以数字开头
+    规范:见名知意
+关键字
+    解释: 再编程代码中有特殊含义的单词
+注释
+    解释: 用来对代码解释说明的文字
+    注意: 不参与运行
+    快捷键: ctrl+/
+SQL语法:
+    1.一条语句以;结尾
+    2.经常用空格,换行增加代码可读性
+*/
+# 入门操作
+-- 查看所有数据库
+show
+    databases;
+
+
+
+
+# 一.数据库的增删改查
+-- 1.数据库的创建
+-- 格式: create database [IF NOT EXISTS] 库名 [CHARSET utf8];
+create database db1;
+create database IF NOT EXISTS db1;
+create database IF NOT EXISTS db2;
+create database db3 CHARSET utf8;
+create database db4 CHAR SET utf8;
+create database db5 CHARACTER SET utf8;
+
+-- 2.数据库的删除
+-- 格式: drop database [IF EXISTS] 库名;
+drop DATABASE  db5;
+drop DATABASE IF EXISTS db5;
+drop DATABASE IF EXISTS db4;
+
+-- 3.修改当前数据库/使用数据库
+-- 格式: use 库名;
+use db1;
+use db2;
+
+-- 4.数据库的查看
+-- 查看所有数据库: show databases;
+show databases;
+-- 查看当前数据库: select database();
+select database();
+-- 查看指定库的建库语句: show create database 库名;
+show create database db1;
+show create database db2;
+show create database db3;
+
+
+# 二.数据表的增删改查
+-- 操作表的前提: 先有库
+use db1;
+-- 1.创建表
+-- 格式: create table [IF NOT EXISTS] 表名(字段名 字段类型 [字段约束]);
+-- 常见数据类型: 整数-> int  字符串->varchar(长度)
+-- 需求: 创建一个学生表,要求存储学生的姓名,年龄,班级信息
+create table student(
+    name varchar(100),
+    age int,
+    class varchar(100)
+);
+create table IF NOT EXISTS student(
+    name varchar(100),
+    age int
+);
+create table IF NOT EXISTS student2(
+    name varchar(100),
+    age int
+);
+-- 注意: 如果字段名是关键字,底层就不会自动加反引号,需要手动添加,否则报错!!!
+create table IF NOT EXISTS student3(
+    name varchar(100),
+    age int,
+    `desc` VARCHAR(100)
+);
+-- 2.查看表
+-- 查看所有表格式: show tables;
+show tables;
+-- 查看表结构格式: desc 表名;
+desc student;
+-- 查看指定表的建表语句: show create table 表名;
+show create table student;
+
+-- 3.修改表名
+-- 格式: rename table 旧表名 to 新表名;
+rename table student2 to stu;
+-- 注意: 表中字段的增删改也属于修改表,后续单独讲解
+
+-- 4.删除表
+-- 格式: drop table [[IF EXISTS] 表名;
+drop table IF EXISTS stu;
+
+
+
+# 三.表中字段的增删改(本质就是修改表操作)
+# 前提: 先有表
+-- 1.添加字段
+-- 格式: alter table student add 字段名 字段类型 [约束];
+alter table student add height DECIMAL(10,2);
+
+-- 2.修改字段(字段名或者字段类型)
+-- 格式: alter table student change 旧字段名 新字段名 字段类型 [约束];
+alter table student change height height double; -- 只改类型
+alter table student change height sg float; -- 名字和类型都改
+-- 注意: MODIFY只能改类型,所以一般常用change
+alter table student MODIFY sg  DECIMAL(10,2);
+
+-- 3.删除字段
+-- 格式: alter table student drop 字段名;
+alter table student drop sg;
+
+-- 4.查看字段
+desc student;
+
+
+-- 四.表中数据记录的增删改
+-- 1.插入数据
+-- 格式: insert into 表名 (字段名) values (字段值);
+-- 需求1: 指定所有字段插入1条数据 -> 张三  18  bigdata18
+insert into student (name,age,class) values ('张三', 18 , 'bigdata18');
+-- 需求2: 指定所有字段插入多条数据 -> 张三,18,bigdata18   李四,28,bigdata19
+insert into student (name,age,class) values ('张三', 18 , 'bigdata18'),('李四', 28 , 'bigdata19');
+-- 需求3: 不指定字段插入1条数据 -> 张三  18  bigdata18
+insert into student  values ('张三', 18 , 'bigdata18');
+-- 需求4: 不指定字段插入多条数据 -> 张三,18,bigdata18   李四,28,bigdata19
+insert into student  values ('张三', 18 , 'bigdata18'),('李四', 28 , 'bigdata19');
+-- 需求5: 指定部分字段插入1条数据 -> 测试  18
+insert into student (name,age) values ('测试', 18 );
+
+-- 2.更新数据
+-- 格式: update 表名 set 字段名=值 [where 条件];
+-- 需求1: 更改所有学生班级为bigdata
+update student set class='bigdata';
+-- 需求2: 把张三的年龄改为19
+update student set age=19 where name = '张三';
+
+-- 3.删除数据
+-- 格式1: delete from 表名 [where 条件];
+-- 需求1: 把所有的张三删除
+delete from student where name = '张三';
+-- 需求2: 删除所有的数据
+delete from student ;
+
+-- 为了演示truncate清空所有数据,再插入点测试数据
+insert into student values ('张三', 18 , 'bigdata18'),('李四', 28 , 'bigdata19');
+-- 格式2: truncate [table] 表名;
+truncate  student;
+
+-- TODO: 后续讲完主键自增,再回来讲解delete和truncate具体区别!!!
+
+
+
+# 约束
+-- 1.主键约束:  非空唯一
+-- 添加主键约束
+create table stu1(
+    id int PRIMARY KEY,
+    name varchar(100),
+    age int
+);
+create table stu2(
+    id int ,
+    name varchar(100),
+    age int
+);
+alter table stu2 add PRIMARY KEY(id) ;
+
+-- 验证主键非空唯一特点:
+insert into stu1 values(1,'张三',18); -- 成功
+insert into stu1 values(1,'李四',28); -- 失败
+insert into stu1 values(null,'李四',28); -- 失败
+insert into stu1 values(0,'李四',28); -- 成功
+
+-- 删除主键约束
+alter table stu2 drop PRIMARY KEY;
+insert into stu2 values(1,'张三',18); -- 成功
+insert into stu2 values(1,'李四',28); -- 成功
+insert into stu2 values(null,'李四',28); -- 失败
+
+
+-- 2. 主键自增
+-- 添加主键自增
+create table stu3(
+    id int PRIMARY KEY AUTO_INCREMENT,
+    name varchar(100),
+    age int
+);
+create table stu4(
+    id int PRIMARY KEY,
+    name varchar(100),
+    age int
+);
+alter table stu4 CHANGE id id int AUTO_INCREMENT;
+
+
+-- 验证主键自增特点: 自动维护编号,每次加1
+insert into stu4 values(1,'张三',18); -- 成功
+insert into stu4 values(1,'李四',28); -- 失败
+-- 注意: 如果设置了自增,此时null和0代表占位,自动使用自增
+insert into stu4(id,name,age) values(null,'李四',28); -- 成功
+insert into stu4(id,name,age) values(0,'李四',28); -- 成功
+insert into stu4(name,age) values('李四',28); -- 成功
+
+-- 删除自增
+alter table stu3 CHANGE id id int ;
+
+-- TODO: 讲解delete和truncate具体区别!!!
+-- delete清空数据,但是主键自增顺序保留,下次插入数据的时候继续自增
+delete from stu4;
+insert into stu4(name,age) values('李四',28),('王五',38);
+-- truncate清空数据,主键自增顺序也被重置,下次插入数据的时候重新自增
+truncate stu4;
+insert into stu4(name,age) values('李四',28),('王五',38);
+
+
+-- 其他约束
+/*
+非空约束特点: 不能为null  关键字: not null
+唯一约束特点: 不能重复    关键字: unique
+默认约束特点: 可以设置默认值 关键字: default
+*/
+-- 建表时添加其他约束
+create table stu5(
+    id int PRIMARY KEY,
+    name varchar(100) not null UNIQUE ,
+    age int not null DEFAULT 18,
+    class VARCHAR(100) DEFAULT 'bigdata'
+);
+-- 建表后添加
+create table stu6(
+    id int ,
+    name varchar(100) ,
+    age int ,
+    class VARCHAR(100)
+);
+-- 添加主键约束
+alter table stu6 add PRIMARY KEY (id);
+-- 添加非空约束
+alter table stu6 CHANGE name name varchar(100) not null;
+alter table stu6 CHANGE age age int not null;
+-- 添加唯一约束
+alter table stu6 add UNIQUE (name);
+alter table stu6 CHANGE age age int not null UNIQUE ;
+-- 添加默认约束
+alter table stu6 CHANGE age age int not null DEFAULT 18;
+alter table stu6 CHANGE class class VARCHAR(100) DEFAULT 'bigdata';
+
+
+-- 查看表结构
+desc stu6;
+
+-- 删除主键约束
+alter table stu6 drop PRIMARY KEY ;
+-- 删除非空约束
+alter table stu6 change id id int;
+alter table stu6 change name name varchar(100);
+alter table stu6 change age age int;
+-- 删除唯一约束
+drop INDEX name on stu6;
+drop INDEX age on stu6;
+-- 删除默认值
+alter table stu6 change class class VARCHAR(100);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
